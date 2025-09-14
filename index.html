@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin the Wheel Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 350px;
+            height: 350px;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 10px solid #2c3e50;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), 
+                        inset 0 0 20px rgba(0, 0, 0, 0.3);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+        
+        .wheel-item {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            left: 0;
+            top: 0;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 30px;
+            font-weight: bold;
+            color: #2c3e50;
+            user-select: none;
+        }
+        
+        .wheel-item span {
+            transform: rotate(45deg);
+            font-size: 14px;
+            text-shadow: 0 0 2px white;
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 50px;
+            background: #e74c3c;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            z-index: 10;
+        }
+        
+        .stand {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 40px;
+            width: 20px;
+            background: #7f8c8d;
+        }
+        
+        .base {
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 40px;
+            background: #95a5a6;
+            border-radius: 5px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .spin-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .spin-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .spin-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .spin-btn:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result {
+            font-size: 1.5rem;
+            min-height: 40px;
+            margin-top: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .prize-highlight {
+            color: #f1c40f;
+            font-weight: bold;
+            text-shadow: 0 0 10px #f39c12;
+        }
+        
+        .spins-left {
+            font-size: 1.1rem;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 500px) {
+            .wheel-container {
+                width: 300px;
+                height: 300px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Spin the Wheel</h1>
+        <p class="subtitle">Test your luck and win amazing prizes!</p>
+        
+        <div class="game-container">
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <div class="wheel" id="wheel"></div>
+                <div class="stand"></div>
+                <div class="base"></div>
+            </div>
+            
+            <div class="controls">
+                <button class="spin-btn" id="spinBtn">SPIN</button>
+                <div class="result" id="result">Spin the wheel to win a prize!</div>
+                <div class="spins-left" id="spinsLeft">Spins left: 5</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const wheel = document.getElementById('wheel');
+            const spinBtn = document.getElementById('spinBtn');
+            const result = document.getElementById('result');
+            const spinsLeftEl = document.getElementById('spinsLeft');
+            
+            // Wheel items with prizes and colors
+            const wheelItems = [
+                { text: "$100", color: "#ff9ff3" },
+                { text: "$200", color: "#feca57" },
+                { text: "$500", color: "#ff6b6b" },
+                { text: "$1000", color: "#48dbfb" },
+                { text: "Car", color: "#1dd1a1" },
+                { text: "Trip", color: "#f368e0" },
+                { text: "TV", color: "#ff9f43" },
+                { text: "Phone", color: "#00d2d3" },
+                { text: "Watch", color: "#54a0ff" },
+                { text: "Nothing", color: "#c8d6e5" }
+            ];
+            
+            let spinsLeft = 5;
+            let isSpinning = false;
+            
+            // Create wheel items
+            function createWheel() {
+                wheel.innerHTML = '';
+                const sliceAngle = 360 / wheelItems.length;
+                
+                wheelItems.forEach((item, index) => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'wheel-item';
+                    itemEl.style.transform = `rotate(${index * sliceAngle}deg)`;
+                    itemEl.style.backgroundColor = item.color;
+                    
+                    const span = document.createElement('span');
+                    span.textContent = item.text;
+                    itemEl.appendChild(span);
+                    
+                    wheel.appendChild(itemEl);
+                });
+            }
+            
+            // Spin the wheel
+            function spinWheel() {
+                if (isSpinning) return;
+                
+                isSpinning = true;
+                spinBtn.disabled = true;
+                result.textContent = "Spinning...";
+                
+                // Random spin with multiple rotations
+                const degrees = 1800 + Math.floor(Math.random() * 1800);
+                const winningIndex = Math.floor((degrees % 360) / (360 / wheelItems.length));
+                const winningItem = wheelItems[wheelItems.length - 1 - winningIndex];
+                
+                // Apply spin animation
+                wheel.style.transform = `rotate(${degrees}deg)`;
+                
+                // Show result after animation completes
+                setTimeout(() => {
+                    result.innerHTML = `You won: <span class="prize-highlight">${winningItem.text}</span>!`;
+                    isSpinning = false;
+                    
+                    // Update spins left
+                    spinsLeft--;
+                    spinsLeftEl.textContent = `Spins left: ${spinsLeft}`;
+                    
+                    // Enable button if spins left
+                    if (spinsLeft > 0) {
+                        spinBtn.disabled = false;
+                    } else {
+                        spinBtn.disabled = true;
+                        result.innerHTML += "<br>Game over! Refresh to play again.";
+                    }
+                }, 4000);
+            }
+            
+            // Initialize the game
+            createWheel();
+            
+            // Event listeners
+            spinBtn.addEventListener('click', spinWheel);
+        });
+    </script>
+</body>
+</html>
